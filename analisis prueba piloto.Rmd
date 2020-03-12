@@ -1,0 +1,236 @@
+---
+title: "Analisis prueba piloto"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=TRUE)
+```
+
+
+## R Markdown
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(nortest)
+library(ggpubr)
+```
+
+```{r}
+pruebapiloto <- read.csv("tabulacion piloto.csv", header= T, na.strings ="")
+```
+
+Distribucion puntaje Z para todos los estudiantes
+
+```{r }
+pruebapiloto %>%
+  filter( !is.na(PuntajeZ)) %>%
+  ggplot(aes( x = PuntajeZ)) + geom_histogram(color = "black", fill = ("grey")) + scale_x_continuous(name = ("Puntaje Z"), breaks = c(-3, -2, -1, 0, 1, 2, 3), limits = c(-3.5, 3.5)) + scale_y_continuous(name = (""), breaks = c(0,2,4,6,8,10,12,14))
+
+```
+
+Distribucion de puntaje Z para estudiantes masculinos
+
+```{r}
+
+sexolab <- c("Masculino", "Femenino")
+names(sexolab) <-c("1", "2")
+
+pruebapiloto %>%
+  filter( !is.na(PuntajeZ)) %>%
+  ggplot(aes( x = PuntajeZ)) + geom_histogram(color = "black", fill = ("grey45")) + scale_x_continuous(name = ("Puntaje Z"), breaks = c(-3, -2, -1, 0, 1, 2, 3), limits = c(-3.5, 3.5)) + scale_y_continuous(name = (""), breaks = c(0,2,4,6,8,10,12,14)) + facet_wrap(~Sexo, labeller= labeller(Sexo = sexolab))
+```
+
+Distribucion de puntaje Z para estudiantes femeninos
+
+```{r}
+pruebapiloto %>%
+  filter( !is.na(PuntajeZ), Sexo == "2") %>%
+  ggplot(aes( x = PuntajeZ)) + geom_histogram(color = "black", fill = "grey86") + scale_x_continuous(name = ("Puntaje Z"), breaks = c(-3, -2, -1, 0, 1, 2, 3),limits = c(-3.5, 3.5)) + scale_y_continuous(name = (""), breaks = c(0,2,4,6,8,10,12,14))+ labs(title = "Femenino")
+
+```
+
+Summary statistics para puntaje Z por Sexo
+```{r}
+pruebapiloto %>%
+  filter( !is.na(PuntajeZ))%>%
+  group_by(Sexo)%>%
+  summarise(meanpuntz = mean(PuntajeZ), sdpuntz = sd(PuntajeZ), 
+            medianpuntz = median(PuntajeZ), IQRpuntz = IQR(PuntajeZ), minpuntz = min(PuntajeZ), maxpuntz = max(PuntajeZ))
+```
+
+Summary Statitistics para puntaje z general
+```{r}
+pruebapiloto %>%
+     filter( !is.na(PuntajeZ)) %>%
+     summarise(meanpuntz = mean(PuntajeZ), sdpuntz = sd(PuntajeZ), 
+      medianpuntz = median(PuntajeZ), IQRpuntz = IQR(PuntajeZ), minpuntz = min(PuntajeZ), maxpuntz = max(PuntajeZ))
+```
+
+Summary statistics para puntaje z por codigo cartografico
+```{r}
+pruebapiloto %>%
+  filter( !is.na(PuntajeZ))%>%
+  group_by(CodCarto)%>%
+  summarise(meanpuntz = mean(PuntajeZ), sdpuntz = sd(PuntajeZ), 
+            medianpuntz = median(PuntajeZ), IQRpuntz = IQR(PuntajeZ), minpuntz = min(PuntajeZ), maxpuntz = max(PuntajeZ))
+```
+
+Summary statistics para puntaje Z por grupo etario
+```{r}
+pruebapiloto %>%
+  filter( !is.na(PuntajeZ))%>%
+  group_by(Edad)%>%
+  summarise(meanpuntz = mean(PuntajeZ), sdpuntz = sd(PuntajeZ), 
+            medianpuntz = median(PuntajeZ), IQRpuntz = IQR(PuntajeZ), minpuntz = min(PuntajeZ), maxpuntz = max(PuntajeZ))
+```
+
+
+Boxplot de puntaje Z por sexo
+
+```{r}
+pruebapiloto %>%
+     filter( !is.na(PuntajeZ)) %>%
+     mutate( SexoFact = as.character(Sexo))%>%
+     ggplot(aes( x = SexoFact, y = PuntajeZ )) + geom_boxplot() + scale_x_discrete(name = ("Sexo"), labels = c("1"= "Masculino", "2" = "Femenino")) + scale_y_continuous(name = ("Puntaje Z"), limits = c(-3.5,3.5), breaks = c(-3,-2,-1,0,1,2,3))
+```
+
+Boxplot de puntaje z por codigo cartografico
+
+```{r}
+ pruebapiloto %>%
+     filter( !is.na(PuntajeZ)) %>%
+     mutate( CodCartoFact = as.character(CodCarto))%>%
+     ggplot(aes( x = CodCartoFact, y = PuntajeZ )) + geom_boxplot() + scale_x_discrete(name = ("Sector")) + scale_y_continuous(name = ("Puntaje Z"), limits = c(-3.5,3.5), breaks = c(-3,-2,-1,0,1,2,3))+ theme( axis.text.x = element_text( size = 7))
+
+```
+
+Boxplot de puntaje z por edad
+
+```{r}
+pruebapiloto %>%
+     filter( !is.na(PuntajeZ)) %>%
+     mutate( EdadFact = as.character(Edad))%>%
+     ggplot(aes( x = EdadFact, y = PuntajeZ )) + geom_boxplot() + scale_x_discrete(name = ("Edad")) + scale_y_continuous(name = ("Puntaje Z"), limits = c(-3.5,3.5), breaks = c(-3,-2,-1,0,1,2,3))
+```
+
+
+                                                                                                                        
+
+Frecuencias de estado nutricional en todos los estudiantes
+
+```{r}
+pruebapiloto %>%
+  filter(!is.na(PuntajeZ)) %>%
+  group_by(EstNutri) %>%
+  summarise(count=n())%>%
+  mutate(rfreq = count/ sum(count))
+```
+
+
+
+Frecuencias de estado nutricional por en estudiantes masculino
+
+```{r}
+pruebapiloto %>%
+  filter(!is.na(PuntajeZ), Sexo == 1) %>%
+  group_by(EstNutri) %>%
+  summarise(count=n())%>%
+  mutate(rfreq = count/ sum(count))
+```
+
+Frecuencias de estado nutricional en estudiantes femeninas
+```{r}
+pruebapiloto %>%
+  filter(!is.na(PuntajeZ), Sexo == 2) %>%
+  group_by(EstNutri) %>%
+  summarise(count=n())%>%
+  mutate(rfreq = count/ sum(count))
+```
+
+Frecuencias de estado nutricional por edad
+
+```{r}
+pruebapiloto %>%
+  filter(!is.na(PuntajeZ)) %>%
+  group_by(Edad, EstNutri) %>%
+  summarise(n=n())%>%
+  mutate(rfreq = n/sum(n))
+```
+
+Gráfica de barras de estado nutricional por sexo
+
+```{r}
+pruebapiloto %>%
+      filter( !is.na(PuntajeZ)) %>%
+      mutate( SexoFact = as.character(Sexo))%>%
+      ggplot(aes(x = EstNutri, fill = SexoFact )) + geom_bar(position = position_dodge(), color = "black") + scale_x_discrete( name = ("Estado Nutricional"), limits = c("Delgadez extrema", "Delgadez", "Normal", "Sobrepeso", "Obesidad")) + scale_y_continuous( name = "") + scale_fill_manual( name = "Sexo", limits = c("2", "1"), labels = c("Femenino", "Masculino"), values= c("grey50", "grey25"))+ theme( axis.text.x = element_text( size = 8))
+```
+
+Gráfica de barras de estado nutricional por edad
+
+```{r}
+pruebapiloto %>%
+      filter( !is.na(PuntajeZ)) %>%
+      mutate( EdadFact = as.character(Edad))%>%
+      ggplot(aes(x = EstNutri, fill = EdadFact)) + geom_bar(color = "black") + scale_x_discrete( name = ("Estado Nutricional"), limits = c("Delgadez extrema", "Delgadez", "Normal", "Sobrepeso", "Obesidad")) +scale_y_continuous( name = "") + labs(fill = "Edad") + scale_fill_brewer( palette = "Greys") + theme(axis.text.x = element_text(size = 8))
+```
+
+```{r}
+pruebapiloto %>%
+      filter( !is.na(PuntajeZ)) %>%
+      mutate( EdadFact = as.character(Edad))%>%
+      ggplot(aes(x = EstNutri, fill = EdadFact)) + geom_bar(color = "black") + scale_x_discrete( name = ("Estado Nutricional"), limits = c("Delgadez extrema", "Delgadez", "Normal", "Sobrepeso", "Obesidad")) +scale_y_continuous( name = "") + labs(fill = "Edad") + scale_fill_brewer( palette = "Blues") + theme(axis.text.x = element_text(size = 8))
+```
+
+
+```{r}
+pruebapiloto %>%
+      filter( !is.na(PuntajeZ)) %>%
+      mutate( CartoFact = as.character(CodCarto))%>%
+      ggplot(aes(x = EstNutri, fill = CartoFact)) + geom_bar(color = "black") + scale_x_discrete( name = ("Estado Nutricional"), limits = c("Delgadez extrema", "Delgadez", "Normal", "Sobrepeso", "Obesidad")) +scale_y_continuous( name = "") + labs(fill = "Sector") + theme(axis.text.x = element_text(size = 8))
+```
+
+Q-Q plot
+```{r}
+ggqqplot(pruebapiloto$PuntajeZ)
+
+```
+
+Prueba shapiro para normalidad
+```{r}
+pruebapiloto%>%
+     filter( !is.na(PuntajeZ)) %>%
+     summarise( statistic = shapiro.test(PuntajeZ)$statistic, p.value = shapiro.test(PuntajeZ)$p.value)
+
+```
+
+Prueba shapiro para normalidad por sexo
+```{r}
+ pruebapiloto%>%
+     filter( !is.na(PuntajeZ)) %>%
+     group_by(Sexo)%>%
+     summarise( statistic = shapiro.test(PuntajeZ)$statistic, p.value = shapiro.test(PuntajeZ)$p.value)
+```
+
+Prueba de Anderson Darling para normalidad 
+```{r}
+ pruebapiloto%>%
+     filter( !is.na(PuntajeZ)) %>%
+     summarise( statistic = ad.test(PuntajeZ)$statistic, p.value = ad.test(PuntajeZ)$p.value)
+```
+
+prueba de anderson darling para normalidad para sexo
+```{r}
+ pruebapiloto%>%
+     filter( !is.na(PuntajeZ)) %>%
+      group_by(Sexo)%>%
+     summarise( statistic = ad.test(PuntajeZ)$statistic, p.value = ad.test(PuntajeZ)$p.value)
+```
+
+
